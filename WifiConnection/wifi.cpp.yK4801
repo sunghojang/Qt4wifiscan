@@ -1,0 +1,135 @@
+#include "wifi.h"
+#include "ui_wifi.h"
+
+WIFI::WIFI(QWidget *parent) :
+    QWidget(parent),
+    ui(new Ui::WIFI)
+{
+    ui->setupUi(this);
+    system("ifconfig eth0 down");
+    system("ifconfig wlan0 up");
+    findTimer = new QTimer();
+    findTimer->setInterval(1000);
+    connect(findTimer,SIGNAL(timeout()),this,SLOT(findActiveWirelesses()));
+    findTimer->start();
+
+    findSSIDTimer = new QTimer();
+    findSSIDTimer->setInterval(8000);
+    connect(findSSIDTimer,SIGNAL(timeout()),this,SLOT(findActiveWirelessesSSID()));
+    findSSIDTimer->start();
+}
+
+WIFI::~WIFI()
+{
+    delete ui;
+}
+void WIFI::findActiveWirelesses()
+{
+    QNetworkConfigurationManager ncm;
+
+
+    netcfgList = ncm.allConfigurations();
+
+    WiFisList.clear();
+    ui->m_label_connectshow->setText("...");
+    for (int i=0;i< netcfgList.count();i++)
+    {
+        qDebug()<<netcfgList.at(i).name();
+        if(netcfgList.at(i).name() == "wlan0"){
+            system("ifconfig wlan0 up");
+            ui->m_label_connectshow->setText("Connect!");
+            break;
+        }
+    }
+
+}
+void WIFI::findActiveWirelessesSSID(){
+    int foundCount = 0;
+    QByteArray line;
+    QTreeWidgetItem * item;
+
+    system("rm wifilist.txt");
+    system("iwlist wlan0 scan | grep SSID >> wifilist.txt");
+    QFile file("wifilist.txt");
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+        return;
+    m_SplitString.clear();
+    while (!file.atEnd()) {
+        line = file.readLine();
+        DataAsString = QString::fromAscii(line.data());
+        m_SplitString << DataAsString.section('"',1,1,QString::SectionSkipEmpty);
+
+    }
+    ui->treeWidgetWiFis->clear();
+    for(int i=0; i<m_SplitString.size(); i++)
+    {
+        bool exist = false;
+        item = new QTreeWidgetItem();
+        for(int j=0; j< ui->treeWidgetWiFis->topLevelItemCount(); j++)
+        {
+            QTreeWidgetItem *index = ui->treeWidgetWiFis->topLevelItem(j);
+            QString str = index->text(1);
+            if(str == m_SplitString[i])
+            {
+                exist = true;
+                break;
+            }
+        }
+        if(!exist)
+        {
+            item->setTextAlignment(0,Qt::AlignVCenter);
+            item->setTextAlignment(1,Qt::AlignHCenter);
+            item->setText(0,QString::number(++foundCount));
+            item->setText(1,m_SplitString[i]);
+            ui->treeWidgetWiFis->addTopLevelItem(item);
+        }
+    }
+}
+
+
+
+void WIFI::on_treeWidgetWiFis_pressed(const QModelIndex &index)
+{
+    ui->m_label_selectSSID->setText(m_SplitString.at(index.row()));
+
+}
+void WIFI::on_m_button_connect_clicked()
+{
+    QString temp;
+    QByteArray line;
+    QStringList tempList;
+    //./wpa_passphrase essid password >> 파일명.conf
+    temp = "wpa_passphrase "+ui->m_label_selectSSID->text()+" "+ui->lineedit_password->text()+" >>"+"temp";
+    qDebug()<<temp;
+    system(temp.toAscii());
+
+    QFile file2("temp");
+    if (!file2.open(QIODevice::ReadWrite | QIODevice::Text))
+        return;
+    while (!file2.atEnd()) {
+        line = file2.readLine();
+        qDebug()<<line;
+        temp = QString::fromAscii(line.data());
+        tempList << temp;
+    }
+    file2.close();
+
+    qDebug()<<tempList.size();
+    for(int i = 0 ; i < tempList.size() ; i++){
+        qDebug()<<i<<tempList.at(i);
+    }
+    tempList.insert(2,"\tproto=WPA2");
+    tempList.insert(2,"\tkey_mgmt=WPA-PSK");
+    qDebug("[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[");
+    for(int i = 0 ; i < tempList.size() ; i++){
+        qDebug() << tempList.at(i);
+    }
+
+    QFile file3("/root/wifi/"+ui->m_label_selectSSID->text()+".conf");
+    if (!file3.open(QIODevice::WriteOnly | QIODevice::Text))
+        return;
+    for(int i =0 ; i <tempList.size() ; i++){
+        file3.write(tempList.at(i).data());
+    }
+    qDebug("[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[");
+}
