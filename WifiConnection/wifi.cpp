@@ -15,10 +15,10 @@ WIFI::WIFI(QWidget *parent) :
 //    connect(findTimer,SIGNAL(timeout()),this,SLOT(findActiveWirelesses()));
 //    findTimer->start();
 //    findActiveWirelesses();
-    //findSSIDTimer = new QTimer();
-    //findSSIDTimer->setInterval(5000);
-    //connect(findSSIDTimer,SIGNAL(timeout()),this,SLOT(findActiveWirelessesSSID()));
-    //findSSIDTimer->start();
+    findSSIDTimer = new QTimer();
+    findSSIDTimer->setInterval(5000);
+    connect(findSSIDTimer,SIGNAL(timeout()),this,SLOT(findActiveWirelessesSSID()));
+    findSSIDTimer->start();
     findActiveWirelessesSSID();
 }
 
@@ -219,4 +219,10 @@ void WIFI::on_m_button_delete_clicked()
 {
     system("ifconfig");
     system("iwconfig");
+}
+
+void WIFI::on_m_button_disconnect_clicked()
+{
+    system("killall wpa_supplicant");
+    system("iwconfig wlan0 essid NNN");
 }
