@@ -15,10 +15,7 @@ WIFI::WIFI(QWidget *parent) :
 //    connect(findTimer,SIGNAL(timeout()),this,SLOT(findActiveWirelesses()));
 //    findTimer->start();
 //    findActiveWirelesses();
-    findSSIDTimer = new QTimer();
-    findSSIDTimer->setInterval(5000);
-    connect(findSSIDTimer,SIGNAL(timeout()),this,SLOT(findActiveWirelessesSSID()));
-    findSSIDTimer->start();
+
     findActiveWirelessesSSID();
 }
 
@@ -60,71 +57,106 @@ void WIFI::findActiveWirelessesSSID(){
         line = file.readLine();
         DataAsString = QString::fromAscii(line.data());
         //m_SplitString << DataAsString.section('"',1,1,QString::SectionSkipEmpty);
-        if(!DataAsString.section("ESSID",1,1,QString::SectionSkipEmpty).isEmpty()){
+        if(!DataAsString.section("ESSID",1,1,QString::SectionSkipEmpty).isEmpty()){ //iwlist 로 얻은 wifi 리스트를 구분하기 위해서 QStringList 에 "tap"을 인위적으로 넣어서 ESSID 구분
             m_SplitString<<"tap";
             m_SplitString<<DataAsString.section("ESSID",1,1,QString::SectionSkipEmpty).section('"',1,1,QString::SectionSkipEmpty);
+            foundCount++;
         }
-        if(!DataAsString.section("IE:",1,1,QString::SectionSkipEmpty).isEmpty()){
+        if(!DataAsString.section("IE:",1,1,QString::SectionSkipEmpty).isEmpty()){   //보안정보를 얻기 위해서 "IE:"로 먼저 구분하고, "Version"으로 재구분
             if(DataAsString.section("IE:",1,1).section("Version",0,0).section(' ',1,2).section('\n',0,0).section("Unknown",1,1).isEmpty()){
                 m_SplitString<<DataAsString.section("IE:",1,1).section("Version",0,0).section(' ',1,2).section('\n',0,0);
             }else{
-                ;//m_SplitString<<"Unknown";
+                ;//m_SplitString<<"Unknown";    //와이파이 보안이 없을겨우 해당 else 문으로 빠집니다.
             }
         }
-        if(!DataAsString.section("Authentication Suites",1,1,QString::SectionSkipEmpty).isEmpty())
+        if(!DataAsString.section("Authentication Suites",1,1,QString::SectionSkipEmpty).isEmpty())  //기타정보 얻기위한 "Authentication Suites" 로 구분
             m_SplitString<<DataAsString.section("Authentication Suites",1,1,QString::SectionSkipEmpty).section(':',1,1,QString::SectionSkipEmpty).section(' ',1,1).section('\n',0,0);
         if(!DataAsString.section("Signal level=-",1,1,QString::SectionSkipEmpty).isEmpty()){
             m_SplitString<<"SIGLEVEL";
             m_SplitString<<DataAsString.section("Signal level=-",1,1,QString::SectionSkipEmpty).section(' ',0,0);
         }
     }
-
-    ui->treeWidgetWiFis->clear();
+    ui->treeWidgetWiFis->clear(); //TreeWidget Clear
     int j =1;
-    for(int k = 0 ; k < 125 ; k++){
+    for(int k = 0 ; k < foundCount ; k++){  //wifi를 찾은 만큼 아이템 갯수 추가
         item[k] = new QTreeWidgetItem();
-        item[k]->setTextAlignment(0,Qt::AlignVCenter);
-        item[k]->setTextAlignment(1,Qt::AlignHCenter);
-        item[k]->setTextAlignment(2,Qt::AlignHCenter);
-        item[k]->setTextAlignment(3,Qt::AlignHCenter);
-        item[k]->setTextAlignment(4,Qt::AlignHCenter);
-        item[k]->setTextAlignment(5,Qt::AlignHCenter);
+        item[k]->setTextAlignment(Wifi_Number,Qt::AlignVCenter);
+        item[k]->setTextAlignment(Wifi_Name,Qt::AlignHCenter);
+        item[k]->setTextAlignment(Wifi_Security,Qt::AlignHCenter);
+        item[k]->setTextAlignment(Wifi_Rule1,Qt::AlignHCenter);
+        item[k]->setTextAlignment(Wifi_Security2,Qt::AlignHCenter);
+        item[k]->setTextAlignment(Wifi_Rule2,Qt::AlignHCenter);
     }
+
+
     for(int l = 0 ; l < ui->treeWidgetWiFis->headerItem()->columnCount() ; l++){
         ui->treeWidgetWiFis->resizeColumnToContents(l);
     }
+//    for(int i=0; i<m_SplitString.size();i++)
+//    {
+//        //bool exist = false;
+//        //        for(int j=0; j< ui->treeWidgetWiFis->topLevelItemCount(); j++)
+//        //        {
+//        //            QTreeWidgetItem *index = ui->treeWidgetWiFis->topLevelItem(j);
+//        //            QString str = index->text(1);
+//        //            if(str == m_SplitString[i])
+//        //            {
+//        //                exist = true;
+//        //                break;
+//        //            }
+//        //        }
+//        //        if(!exist)
+//        //        {
+//        if(m_SplitString[i] == "tap" && i>0){
+//            foundCount++;
+//            item[foundCount]->setText(0,QString::number(foundCount));
+//            ui->treeWidgetWiFis->addTopLevelItem(item[foundCount]);
+//            j = 1;
+//            continue;
+//        }else if(i == 0){
+//            continue;
+//        }else if(m_SplitString[i] == "SIGLEVEL"){
+//            i++;
+//            if(m_SplitString[i].toInt() < 67){
+//                item[foundCount]->setBackgroundColor(5,Qt::blue);
+//            }else{
+//                item[foundCount]->setBackgroundColor(5,Qt::red);
+//            }
+//            item[foundCount]->setText(5,m_SplitString[i]);
+//            item[foundCount]->setTextColor(5,Qt::yellow);
+//            continue;
+//        }
+//        item[foundCount]->setText(j++,m_SplitString[i]);
+//        //        }
+//    }
+    foundCount = 0; //wifi를 찾은 만큼 아이템 갯수 추가
     for(int i=0; i<m_SplitString.size();i++)
     {
-        //bool exist = false;
-        //        for(int j=0; j< ui->treeWidgetWiFis->topLevelItemCount(); j++)
-        //        {
-        //            QTreeWidgetItem *index = ui->treeWidgetWiFis->topLevelItem(j);
-        //            QString str = index->text(1);
-        //            if(str == m_SplitString[i])
-        //            {
-        //                exist = true;
-        //                break;
-        //            }
-        //        }
-        //        if(!exist)
-        //        {
         if(m_SplitString[i] == "tap" && i>0){
-            foundCount++;
+
             item[foundCount]->setText(0,QString::number(foundCount));
             ui->treeWidgetWiFis->addTopLevelItem(item[foundCount]);
+            foundCount++;
             j = 1;
             continue;
         }else if(i == 0){
             continue;
         }else if(m_SplitString[i] == "SIGLEVEL"){
             i++;
-            if(m_SplitString[i].toInt() < 67){
-                item[foundCount]->setBackgroundColor(5,Qt::blue);
-            }else{
-                item[foundCount]->setBackgroundColor(5,Qt::red);
+            if(m_SplitString[i].toInt() > 100){
+                item[foundCount]->setIcon(Wifi_Name,QIcon(QPixmap(":/wifi/signal/ping0.png")));
             }
-            item[foundCount]->setText(5,m_SplitString[i]);
-            item[foundCount]->setTextColor(5,Qt::yellow);
+            else if(m_SplitString[i].toInt() > 90){
+                item[foundCount]->setIcon(Wifi_Name,QIcon(QPixmap(":/wifi/signal/ping1.png")));
+            }
+            else if(m_SplitString[i].toInt() > 80){
+                item[foundCount]->setIcon(Wifi_Name,QIcon(QPixmap(":/wifi/signal/ping2.png")));
+            }
+            else if(m_SplitString[i].toInt() > 70){
+                item[foundCount]->setIcon(Wifi_Name,QIcon(QPixmap(":/wifi/signal/ping3.png")));
+            }else{
+                item[foundCount]->setIcon(Wifi_Name,QIcon(QPixmap(":/wifi/signal/ping4.png")));
+            }
             continue;
         }
         item[foundCount]->setText(j++,m_SplitString[i]);
@@ -217,8 +249,10 @@ void WIFI::on_m_button_check_clicked()
 
 void WIFI::on_m_button_delete_clicked()
 {
-    system("ifconfig");
-    system("iwconfig");
+    findSSIDTimer = new QTimer();
+    findSSIDTimer->setInterval(8000);
+    connect(findSSIDTimer,SIGNAL(timeout()),this,SLOT(findActiveWirelessesSSID()));
+    findSSIDTimer->start();
 }
 
 void WIFI::on_m_button_disconnect_clicked()

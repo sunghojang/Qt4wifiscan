@@ -48,7 +48,11 @@ private slots:
 
     void on_m_button_delete_clicked();
 
+    void on_m_button_disconnect_clicked();
+
 private:
+    enum {Wifi_Number = 0,Wifi_Name,Wifi_Security,Wifi_Rule1,Wifi_Security2,Wifi_Rule2};
+    enum {Security_OPEN = 0,Security_SHARED,Security_WPAPSK,Security_WPA2PSK,Security_WPAWPA2PSK};
     Ui::WIFI *ui;
     QTimer *findTimer;
     QStandardItemModel* listModel;

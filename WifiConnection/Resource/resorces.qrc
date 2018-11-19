@@ -1,0 +1,9 @@
+<RCC>
+    <qresource prefix="/wifi/signal">
+        <file>ping4.png</file>
+        <file>ping3.png</file>
+        <file>ping2.png</file>
+        <file>ping1.png</file>
+        <file>ping0.png</file>
+    </qresource>
+</RCC>

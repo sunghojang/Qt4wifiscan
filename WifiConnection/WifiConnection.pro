@@ -21,3 +21,6 @@ HEADERS  += mainwindow.h \
 
 FORMS    += mainwindow.ui \
     wifi.ui
+
+RESOURCES += \
+    Resource/resorces.qrc
