@@ -14,9 +14,9 @@ WIFI::WIFI(QWidget *parent) :
 //    findTimer->setInterval(1000);
 //    connect(findTimer,SIGNAL(timeout()),this,SLOT(findActiveWirelesses()));
 //    findTimer->start();
-//    findActiveWirelesses();
+    findActiveWirelesses();
 
-    findActiveWirelessesSSID();
+    //findActiveWirelessesSSID();
 }
 
 WIFI::~WIFI()
@@ -48,7 +48,7 @@ void WIFI::findActiveWirelessesSSID(){
     system("rm wifilist.txt");
     //system("iwlist wlan0 scan | grep SSID >> wifilist.txt");
     system("iwlist wlan0 scan  >> wifilist.txt");
-    QProcess::execute("gedit /home/oDx/Documents/a.txt");
+    //QProcess::execute("gedit /home/oDx/Documents/a.txt");
     QFile file("wifilist.txt");
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
         return;
@@ -154,7 +154,8 @@ void WIFI::findActiveWirelessesSSID(){
             }
             else if(m_SplitString[i].toInt() > 70){
                 item[foundCount]->setIcon(Wifi_Name,QIcon(QPixmap(":/wifi/signal/ping3.png")));
-            }else{
+            }
+            else{
                 item[foundCount]->setIcon(Wifi_Name,QIcon(QPixmap(":/wifi/signal/ping4.png")));
             }
             continue;
@@ -243,8 +244,49 @@ void WIFI::on_m_button_stop_clicked()
 
 void WIFI::on_m_button_check_clicked()
 {
-    system("ping -W 3 -c 5 192.168.34.1");
-    system("ping -W 3 -c 5 192.168.1.1");
+//    system("ping -W 3 -c 5 192.168.34.1");
+//    system("ping -W 3 -c 5 192.168.1.1");
+    bool flag_wificonnect = true;
+    int try_wificonnect = 1;
+    QString DataAsString;
+    QByteArray line;
+
+    system("killall wpa_supplicant");
+    system("iwconfig wlan0 essid NNN");
+    system("wpa_supplicant -iwlan0 -c temp &");//wifi 설정을 저장한 temp 파일로 와이파이 활성화
+
+
+    while(flag_wificonnect){
+        system("iwconfig wlan0 > tempiw");
+        QFile file("tempiw");
+
+        if (!file.open(QIODevice::ReadOnly | QIODevice::Text)){
+            flag_wificonnect =false;
+            ui->m_label_state->setText("Not connected F");
+            //emit signal_iswificonnection(false);
+        }else{
+            while (!file.atEnd()) {
+                line = file.readLine();
+                DataAsString = QString::fromAscii(line.data());
+                if(DataAsString.section("wlan0",1,1).section(" ",0,0,QString::SectionSkipEmpty).compare("unassociated")<0){
+                    flag_wificonnect =false;
+                    ui->m_label_state->setText("Connected");
+                    //emit signal_iswificonnection(true);
+                    break;
+                }else{
+                    break;
+                }
+            }
+        }
+        qDebug()<<"Try Wifi connect check"<<try_wificonnect;
+        if(try_wificonnect >= 10){
+            flag_wificonnect =false;
+            ui->m_label_state->setText("Not connected ");
+            //emit signal_iswificonnection(false);
+        }
+        sleep(1);
+        try_wificonnect++;
+    }
 }
 
 void WIFI::on_m_button_delete_clicked()

@@ -63,7 +63,7 @@
    <property name="geometry">
     <rect>
      <x>670</x>
-     <y>115</y>
+     <y>140</y>
      <width>121</width>
      <height>66</height>
     </rect>
@@ -78,7 +78,7 @@
      <x>585</x>
      <y>15</y>
      <width>201</width>
-     <height>93</height>
+     <height>114</height>
     </rect>
    </property>
    <layout class="QGridLayout" name="gridLayout">
@@ -124,19 +124,6 @@
       </property>
      </widget>
     </item>
-    <item row="0" column="1" colspan="2">
-     <spacer name="horizontalSpacer">
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-      <property name="sizeHint" stdset="0">
-       <size>
-        <width>40</width>
-        <height>20</height>
-       </size>
-      </property>
-     </spacer>
-    </item>
     <item row="3" column="1">
      <widget class="QLineEdit" name="lineedit_password">
       <property name="text">
@@ -147,13 +134,20 @@
       </property>
      </widget>
     </item>
+    <item row="0" column="1">
+     <widget class="QLabel" name="m_label_state">
+      <property name="text">
+       <string>TextLabel</string>
+      </property>
+     </widget>
+    </item>
    </layout>
   </widget>
   <widget class="QPushButton" name="m_button_delete">
    <property name="geometry">
     <rect>
      <x>585</x>
-     <y>115</y>
+     <y>140</y>
      <width>80</width>
      <height>66</height>
     </rect>
@@ -166,7 +160,7 @@
    <property name="geometry">
     <rect>
      <x>585</x>
-     <y>190</y>
+     <y>215</y>
      <width>80</width>
      <height>66</height>
     </rect>
@@ -180,7 +174,7 @@ Pairing</string>
    <property name="geometry">
     <rect>
      <x>585</x>
-     <y>265</y>
+     <y>290</y>
      <width>80</width>
      <height>66</height>
     </rect>
@@ -193,7 +187,7 @@ Pairing</string>
    <property name="geometry">
     <rect>
      <x>670</x>
-     <y>190</y>
+     <y>215</y>
      <width>121</width>
      <height>66</height>
     </rect>
